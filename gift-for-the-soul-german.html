@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift for The Soul</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+
+        }
+
+        .gift-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            height: 30rem;
+
+        }
+
+        .gift-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: auto;
+        }
+
+        .gift-container.no-image {
+            height: 26rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-message {
+            font-size: 18px;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gift-container">
+        <div class="loading-message" id="loading-message">Loading the gift for the soul...</div>
+        <img src="" alt="" class="gift-image" id="gift-image" loading="lazy">
+    </div>
+
+    <script>
+        const fetchData = async () => {
+            const api = 'https://ouryagya-admin.brahmakumaris.org/api/gift-for-the-souls?locale=de&populate=image&sort=date:desc&pagination[limit]=1&pagination[start]=0';
+            const imageContainer = document.querySelector(".gift-container");
+            const loadingMessage = document.getElementById('loading-message');
+            const giftImage = document.getElementById('gift-image');
+            const message = t('No gift for the soul found today.');
+
+            loadingMessage.innerHTML = t('Loading gift for the soul...');
+            try {
+                const response = await fetch(api);
+                const data = await response.json();
+                const attributes = data?.data[0]?.attributes;
+                const imageUrl = attributes?.image?.data[0]?.attributes?.url;
+                title = attributes?.title;
+                loadingMessage.style.display = 'none';
+
+                if (!imageUrl) {
+                    imageContainer.innerHTML = message;
+                    imageContainer.classList.add('no-image');
+                    return;
+                }
+
+                giftImage.src = imageUrl;
+                giftImage.alt = title;
+                loadingMessage.style.display = 'none';
+                imageContainer.style.height = 'auto';
+
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+                loadingMessage.style.display = 'none';
+                imageContainer.innerHTML = t("An error occurred while fetching the gift for the soul image.");
+            }
+        }
+
+        // Micro localization for german and english.
+        const en = new Map([
+            ['Loading gift for the soul...', 'Loading gift for the soul...'],
+            ['No gift for the soul found today.', 'No for the soul gift soul today.'],
+            ['An error occurred while fetching the gift for the soul image.', 'An error occurred while fetching the gift for the soul image.']
+        ]);
+
+        const de = new Map([
+            ['Loading gift for the soul...', 'Geschenk für die Seele wird geladen...'],
+            ['No gift for the soul found today.', 'Kein Geschenk für die Seele gefunden.'],
+            ['An error occurred while fetching the gift for the soul image.', 'Ein Fehler ist aufgetreten beim Abrufen des Geschenks für die Seele.']
+        ]);
+
+
+        function t(key) {
+            const locale = location?.search?.indexOf('lang=en') > -1 ? 'en' : 'de';
+            const map = locale?.startsWith('de') ? de : en;
+            return map?.get(key) ?? key;
+        }
+
+        fetchData();
+    </script>
+</body>
+
+</html>
